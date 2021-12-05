@@ -15,3 +15,6 @@ for(k in 17:37) {
     misclassification_rate <- num_incorrect_labels / 150
     print(misclassification_rate)
 }
+
+# model <- knn(train = train, test = test, cl = train_target, k = best k value from for loop)
+# table(test_target, model) to show confusion matrix
