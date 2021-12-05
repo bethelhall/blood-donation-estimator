@@ -45,8 +45,6 @@ predict   0   1
 predict   0   1
   FALSE 111  30
   TRUE    3   6
-> remove(bloodpredictTest)
-> remove(nobloodpredictTest)
 > bloodprecision <- ctab.bloodtest[2,2] / sum(ctab.bloodtest[2,])
 > nobloodprecision <- ctab.nobloodtest[2,2] / sum(ctab.nobloodtest[2,])
 > bloodprecision
@@ -144,3 +142,85 @@ Number of Fisher Scoring iterations: 5
 [1] 0.1305557
 
 # If the model explains only about 13.05% of the deviance, then this is not a highly predictive model
+
+# Function to normalize data
+> normalize <- function(x) {return((x - min(x)) / (max(x) - min(x))) }
+> data <- subset(data, select = -c(Monetary))
+> data_n <- as.data.frame(lapply(data[,c(1,2,3,4)], normalize))
+
+# Splitting test and training data
+> set.seed(1234)
+> spl <- sample.split(data_n$donatedMar07, SplitRatio = 0.8)
+> train <- subset(data_n, spl == TRUE)
+> test <- subset(data_n, spl == FALSE)
+> attach(data_n)
+
+# Creating model
+> normmodel <- glm(donatedMar07 ~ ., data = train, family = binomial(link = "logit"))
+
+# Using model to make prediction
+> train$predict <- predict(normmodel, newdata = train, type = "response")
+> test$predict <- predict(normmodel, newdata = test, type = "response")
+
+# Evaluating prediction models with confusion matrix
+> ctab.normtest <- table(predict = test$predict>0.5, donatedMar07 = test$donatedMar07)
+> ctab.normtest
+       donatedMar07
+predict   0   1
+  FALSE 111  32
+  TRUE    3   4
+> precision <- ctab.normtest[2,2] / sum(ctab.normtest[2,])
+> precision
+[1] 0.5714286
+> recall <- ctab.normtest[2,2] / sum(ctab.normtest[,2])
+> enrich <- precision / mean(as.numeric(test$donatedMar07))
+> enrich
+[1] 2.380952
+> summary(normmodel)
+
+Call:
+glm(formula = donatedMar07 ~ ., family = binomial(link = "logit"), 
+    data = train)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-2.4050  -0.7923  -0.5106  -0.2232   2.6080  
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  -0.3844     0.1936  -1.986  0.04709 *  
+Recency      -6.9746     1.4144  -4.931 8.18e-07 ***
+Frequency     6.3229     1.3738   4.603 4.17e-06 ***
+Time         -2.1408     0.6344  -3.374  0.00074 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 655.57  on 597  degrees of freedom
+Residual deviance: 573.14  on 594  degrees of freedom
+AIC: 581.14
+
+Number of Fisher Scoring iterations: 5
+
+# Pseudo-R sqaured of model
+> df.null <- dim(train) [[1]] - 1
+> df.model <- dim(train) [[1]] - length(normmodel$coefficients)
+> df.null
+[1] 597
+> df.model
+[1] 594
+> pnull <- mean(as.numeric(train$donatedMar07))
+> null.dev <- -2*loglikelihood(as.numeric(train$donatedMar07), pnull)
+> pred <- predict(normmodel, newdata = train, type = "response")
+> resid.dev <- -2*loglikelihood(as.numeric(train$donatedMar07), pred)
+> delDev <- null.dev - resid.dev
+> deldf <- df.null - df.model
+> p <- pchisq(delDev, deldf, lower.tail = F)
+> p
+[1] 9.259681e-18
+> pr2 <- 1 - (resid.dev/null.dev)
+> print(pr2)
+[1] 0.1257323
+
+# This model explains even less of the deviance, at 12.57%, making this a less predictive model
