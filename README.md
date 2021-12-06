@@ -7,3 +7,6 @@ has a few packages already installed in their Rstudio environment:
 "caTools"
 "caret"
 "e1071"
+
+The scripts also assume that you have already downloaded the dataset
+from the UCI Machine Learning Repository
