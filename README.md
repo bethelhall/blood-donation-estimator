@@ -5,3 +5,4 @@ has a few packages already installed in their Rstudio environment:
   "class"
   "caTools"
   "caret"
+  "e1071"
