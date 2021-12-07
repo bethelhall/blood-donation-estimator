@@ -8,5 +8,5 @@ has a few packages already installed in their Rstudio environment:
 "caret"
 "e1071"
 
-The scripts also assume that you have already downloaded the dataset
+The scripts also assume that you have already downloaded the transfusions dataset
 from the UCI Machine Learning Repository
