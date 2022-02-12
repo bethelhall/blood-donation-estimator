@@ -10,3 +10,4 @@ has a few packages already installed in their Rstudio environment:
 
 The scripts also assume that you have already downloaded the transfusions dataset
 from the UCI Machine Learning Repository
+Dataset can be downloaded from https://archive.ics.uci.edu/ml/machine-learning-databases/blood-transfusion/.
